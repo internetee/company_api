@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: Company API
+  version: "1.0.0"
+  description: Company name, contacts, address, registration, representatives and status by registry code. A public register may not return email, phone or representatives.
+servers:
+  - url: /
+paths:
+  /companies/{country_code}/{registry_code}:
+    get:
+      operationId: getCompany
+      summary: Company details
+      parameters:
+        - name: country_code
+          in: path
+          required: true
+          description: Country code. BG, CZ, EE, FI, FR, LT, LV, NO, PL and SK are supported.
+          schema:
+            type: string
+          example: EE
+        - name: registry_code
+          in: path
+          required: true
+          description: An Estonian, Czech or Slovak code is 8 digits. A Bulgarian, French, Lithuanian or Norwegian code is 9 digits. A Polish code is 10 digits. A Latvian code is 11 digits. A Finnish code looks like 1234567-8.
+          schema:
+            type: string
+            pattern: "^([0-9]{8}|[0-9]{9}|[0-9]{10}|[0-9]{11}|[0-9]{7}-[0-9])$"
+          example: "12417834"
+      responses:
+        "200":
+          description: Company found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+        "400":
+          description: The registry code does not match the country's format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          description: The country is not supported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "502":
+          description: The business register request failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    Company:
+      type: object
+      required:
+        - country_code
+        - registry_code
+        - name
+        - email
+        - phone
+        - address
+        - registered_on
+        - deleted_on
+        - active
+        - status
+        - representatives
+      properties:
+        country_code:
+          type: string
+          example: EE
+        registry_code:
+          type: string
+          example: "12417834"
+        name:
+          type: string
+          example: Näidisettevõte OÜ
+        email:
+          type: string
+          nullable: true
+          example: info@naidis.ee
+        phone:
+          type: string
+          nullable: true
+          description: Landline or mobile number. When both exist, they are separated by a comma.
+          example: "+372 5551234"
+        address:
+          type: string
+          nullable: true
+          example: Harju maakond, Tallinn, Kesklinna linnaosa, Näidise tn 1, 10111
+        registered_on:
+          type: string
+          nullable: true
+          format: date
+          description: Date the company was entered in the register.
+          example: "2013-02-07"
+        deleted_on:
+          type: string
+          nullable: true
+          format: date
+          description: Date of deletion, cessation or reorganisation. Filled only when the company is no longer in the register.
+          example: null
+        active:
+          type: boolean
+          description: True when the company is entered in the register.
+          example: true
+        status:
+          $ref: "#/components/schemas/Status"
+        representatives:
+          type: array
+          items:
+            $ref: "#/components/schemas/Representative"
+    Status:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: R
+        name:
+          type: string
+          example: Entered in the register
+    Representative:
+      type: object
+      required:
+        - name
+        - personal_code
+        - role
+        - valid_from
+      properties:
+        name:
+          type: string
+          example: Mari Maasikas
+        personal_code:
+          type: string
+          nullable: true
+          example: "48503151233"
+        role:
+          type: string
+          example: Management board member
+        valid_from:
+          type: string
+          nullable: true
+          format: date
+          example: "2025-02-03"
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        country_code:
+          type: string
+        registry_code:
+          type: string

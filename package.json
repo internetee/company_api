@@ -1,0 +1,7 @@
+{
+  "name": "company-api",
+  "private": true,
+  "dependencies": {
+    "swagger-ui-dist": "5.34.0"
+  }
+}

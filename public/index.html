@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ettevõtte päring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="brand" href="https://www.internet.ee/" target="_blank" rel="noopener noreferrer">
+        <img src="/eis-logo.svg" width="104" height="100" alt="Eesti Interneti Sihtasutus">
+        <span class="brand-text">
+          <strong data-i18n="org">Eesti Interneti Sihtasutus</strong>
+          <small data-i18n="product">Ettevõtte päring</small>
+        </span>
+      </a>
+      <div class="top-actions">
+        <div class="lang" role="group" id="lang-switch">
+          <button type="button" data-set-lang="et" aria-pressed="true">EST</button>
+          <button type="button" data-set-lang="en" aria-pressed="false">ENG</button>
+        </div>
+        <a class="docs-link" href="/docs/">Swagger</a>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="search-card">
+      <h1 data-i18n="title">Vaata ettevõtet</h1>
+      <p class="lead" data-i18n="lead">Vali riik ja sisesta registrikood. Koodi kuju sõltub valitud riigist. Avalik register ei pruugi anda e-posti, telefoni ega esindajaid.</p>
+      <form id="lookup">
+        <label>
+          <span data-i18n="country">Riigikood</span>
+          <select id="country" name="country" required>
+            <option value="BG">BG Bulgaaria</option>
+            <option value="CZ">CZ Tšehhi</option>
+            <option value="EE">EE Eesti</option>
+            <option value="FI">FI Soome</option>
+            <option value="FR">FR Prantsusmaa</option>
+            <option value="LT">LT Leedu</option>
+            <option value="LV">LV Läti</option>
+            <option value="NO">NO Norra</option>
+            <option value="PL">PL Poola</option>
+            <option value="SK">SK Slovakkia</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="registry">Registrikood</span>
+          <input id="code" name="code" maxlength="11" placeholder="12417834" autocomplete="off" required>
+        </label>
+        <button type="submit" id="submit" data-i18n="search">Otsi</button>
+      </form>
+      <div class="samples">
+        <button class="sample" type="button" id="sample">Näidis 12417834</button>
+      </div>
+    </section>
+    <section id="result" class="result" aria-live="polite"></section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
