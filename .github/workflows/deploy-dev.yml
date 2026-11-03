@@ -1,0 +1,57 @@
+name: Build & deploy to eis-dev
+
+# Push to main -> build image, push to ECR, ask Ry_AWS_IaC to roll it out.
+# Needs: secret GH_ACTIONS_DEPLOY_ROLE_ARN (OIDC role; its trust policy must list
+# repo:internetee/company_api:*), variable GH_APP_ID and secret GH_APP_PRIVATE_KEY
+# (GitHub App allowed to dispatch to internetee/Ry_AWS_IaC).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ECR_URL: 034362061030.dkr.ecr.eu-north-1.amazonaws.com
+  ECR_REPO: company-api
+  AWS_REGION: eu-north-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GH_ACTIONS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Immutable sha tag: a re-used :latest would not change the Deployment, so pods would not roll.
+      - name: Build and push
+        run: |
+          TAG="main-$(git rev-parse --short HEAD)"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_URL"
+          docker build --platform linux/amd64 -t "$ECR_URL/$ECR_REPO:$TAG" .
+          docker push "$ECR_URL/$ECR_REPO:$TAG"
+
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          owner: internetee
+          repositories: Ry_AWS_IaC
+
+      - name: Trigger Helm deploy in Ry_AWS_IaC
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh api repos/internetee/Ry_AWS_IaC/dispatches \
+            -f event_type=deploy-service-staging \
+            -f "client_payload[app_name]=company-api" \
+            -f "client_payload[image_tag]=$TAG" \
+            -f "client_payload[pr_number]=0"
