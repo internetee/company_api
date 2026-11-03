@@ -52,6 +52,6 @@ jobs:
         run: |
           gh api repos/internetee/Ry_AWS_IaC/dispatches \
             -f event_type=deploy-service-staging \
-            -f "client_payload[app_name]=company-api" \
+            -f "client_payload[app_name]=companyapi" \
             -f "client_payload[image_tag]=$TAG" \
             -f "client_payload[pr_number]=0"
